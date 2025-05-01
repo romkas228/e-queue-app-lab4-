@@ -1,13 +1,13 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const controller = require("../controllers/queueController");
+const controller = require('../controllers/queueController');
 
-router.get("/", controller.getHome);
-router.post("/create", controller.postCreateQueue);
-router.post("/join", controller.postJoinQueue);
-router.post("/next", controller.postNext);
-router.post("/remove-user", controller.postRemoveUser);
-router.post("/close-queue", controller.postCloseQueue);
-router.post("/check-my-place", controller.postCheckMyPlace);
+router.get('/', controller.index);
+router.post('/create', controller.createQueue);
+router.post('/add', controller.addUser);
+router.post('/position', controller.getUserPosition);
+router.post('/next', controller.removeFirst);
+router.post('/remove', controller.removeUser);
+router.post('/close', controller.closeQueue);
 
 module.exports = router;

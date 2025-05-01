@@ -1,35 +1,23 @@
 const repo = require("../repositories/queueRepository");
 
-function createQueue(name, ownerId) {
-    const queue = {
-        id: Date.now().toString(),
-        name,
-        ownerId,
-        users: [],
-        isOpen: true
-    };
-    repo.addQueue(queue);
-    return queue;
-}
-
-function joinQueue(queueId, userId) {
-    const queue = repo.getQueueById(queueId);
-    if (queue && queue.isOpen) {
-        queue.users.push({ userId, timestamp: Date.now() });
-        return true;
-    }
-    return false;
-}
-
-function nextInQueue(queueId) {
-    const queue = repo.getQueueById(queueId);
-    if (queue && queue.users.length > 0) {
-        queue.users.shift();
-    }
-}
+const getAllQueues = () => repo.getAllQueues();
+const getQueueById = (id) => repo.getQueueById(id);
+const createQueue = (queue) => repo.createQueue(queue);
+const updateQueue = (id, queue) => repo.updateQueue(id, queue);
+const deleteQueue = (id) => repo.deleteQueue(id);
+const addUserToQueue = (queueId, userId) => repo.addUserToQueue(queueId, userId);
+const getUserPosition = (queueId, userId) => repo.getUserPosition(queueId, userId);
+const removeUserFromQueue = (queueId, userId) => repo.removeUserFromQueue(queueId, userId);
+const removeFirstUser = (queueId) => repo.removeFirstUser(queueId);
 
 module.exports = {
-    createQueue,
-    joinQueue,
-    nextInQueue
+  getAllQueues,
+  getQueueById,
+  createQueue,
+  updateQueue,
+  deleteQueue,
+  addUserToQueue,
+  getUserPosition,
+  removeUserFromQueue,
+  removeFirstUser,
 };

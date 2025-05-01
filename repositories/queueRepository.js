@@ -1,54 +1,48 @@
-const path = require("path");
-const { readFileSync, readFileCallback, readFilePromise, readFileAsyncAwait } = require("../utils/fileReader");
+const pool = require('../db');
 
-let queues = [];
-
-function loadQueuesSync() {
-    queues = readFileSync(path.join(__dirname, "../data/queues.json"));
+async function getAllQueues() {
+  const res = await pool.query('SELECT * FROM queues');
+  return res.rows;
 }
 
-function loadQueuesWithCallback(callback) {
-    readFileCallback(path.join(__dirname, "../data/queues.json"), (data) => {
-        queues = data;
-        callback();
-    });
+async function createQueue(name, ownerId) {
+  return pool.query(
+    'INSERT INTO queues (name, owner_id, is_open, users) VALUES ($1, $2, true, $3)',
+    [name, ownerId, []]
+  );
 }
 
-function loadQueuesWithPromise() {
-    return readFilePromise(path.join(__dirname, "../data/queues.json"))
-        .then(data => queues = data);
+async function addUserToQueue(queueId, userId) {
+  return pool.query(
+    'UPDATE queues SET users = array_append(users, $1) WHERE id = $2 AND is_open = true',
+    [userId, queueId]
+  );
 }
 
-async function loadQueuesAsync() {
-    queues = await readFileAsyncAwait(path.join(__dirname, "../data/queues.json"));
+async function getUserPosition(queueId, userId) {
+  const res = await pool.query('SELECT users FROM queues WHERE id = $1', [queueId]);
+  const users = res.rows[0]?.users || [];
+  return users.indexOf(userId) + 1 || null;
 }
 
-function getAllQueues() {
-    return queues;
+async function removeFirstUser(queueId) {
+  return pool.query('UPDATE queues SET users = users[2:array_length(users, 1)] WHERE id = $1', [queueId]);
 }
 
-function getQueueById(id) {
-    return queues.find(q => q.id === id);
+async function removeUser(queueId, userId) {
+  return pool.query('UPDATE queues SET users = array_remove(users, $1) WHERE id = $2', [userId, queueId]);
 }
 
-function addQueue(queue) {
-    queues.push(queue);
-}
-
-function removeUser(queueId, userId) {
-    const queue = getQueueById(queueId);
-    if (queue) {
-        queue.users = queue.users.filter(u => u.userId !== userId);
-    }
+async function closeQueue(queueId) {
+  return pool.query('UPDATE queues SET is_open = false WHERE id = $1', [queueId]);
 }
 
 module.exports = {
-    loadQueuesSync,
-    loadQueuesWithCallback,
-    loadQueuesWithPromise,
-    loadQueuesAsync,
-    getAllQueues,
-    getQueueById,
-    addQueue,
-    removeUser
+  getAllQueues,
+  createQueue,
+  addUserToQueue,
+  getUserPosition,
+  removeFirstUser,
+  removeUser,
+  closeQueue,
 };

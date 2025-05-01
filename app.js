@@ -1,13 +1,9 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const routes = require("./routes/queueRoutes");
-const repo = require("./repositories/queueRepository");
+const routes = require('./routes/queueRoutes');
 
-app.set("view engine", "ejs");
+app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+app.use('/', routes);
 
-repo.loadQueuesSync();
-
-app.use("/", routes);
-
-app.listen(3000, () => console.log("Сервер запущено на порту 3000"));
+app.listen(3000, () => console.log('Сервер запущено на порту 3000'));

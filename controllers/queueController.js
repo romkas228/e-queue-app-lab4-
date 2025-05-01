@@ -1,75 +1,54 @@
-const service = require("../services/queueService");
-const repo = require("../repositories/queueRepository");
+const repo = require('../repositories/queueRepository');
 
-function getHome(req, res) {
-    const queues = repo.getAllQueues();
-    res.render("index", { queues, userInfo: null });
-}
+exports.index = async (req, res) => {
+  const queues = await repo.getAllQueues();
+  res.render('index', { queues });
+};
 
-function postCreateQueue(req, res) {
-    const { name, ownerId } = req.body;
-    service.createQueue(name, ownerId);
-    res.redirect("/");
-}
+exports.createQueue = async (req, res) => {
+  const { name, ownerId } = req.body;
+  await repo.createQueue(name, ownerId);
+  res.redirect('/');
+};
 
-function postJoinQueue(req, res) {
-    const { queueId, userId } = req.body;
-    service.joinQueue(queueId, userId);
-    res.redirect("/");
-}
-
-function postNext(req, res) {
-    const { queueId, ownerId } = req.body;
-    const queue = repo.getQueueById(queueId);
-    if (queue && queue.ownerId === ownerId) {
-        service.nextInQueue(queueId);
-    }
-    res.redirect("/");
-}
-
-function postRemoveUser(req, res) {
-    const { queueId, userId, ownerId } = req.body;
-    const queue = repo.getQueueById(queueId);
-    if (queue && queue.ownerId === ownerId) {
-        repo.removeUser(queueId, userId);
-    }
-    res.redirect("/");
-}
-
-function postCloseQueue(req, res) {
-    const { queueId, ownerId } = req.body;
-    const queue = repo.getQueueById(queueId);
-    if (queue && queue.ownerId === ownerId) {
-        queue.isOpen = false;
-    }
-    res.redirect("/");
-}
-
-function postCheckMyPlace(req, res) {
+exports.addUser = async (req, res) => {
   const { queueId, userId } = req.body;
-  const queue = repo.getQueueById(queueId);
+  await repo.addUserToQueue(queueId, userId);
+  res.redirect('/');
+};
 
-  let position = null;
+exports.getUserPosition = async (req, res) => {
+  const { queueId, userId } = req.body;
+  const position = await repo.getUserPosition(queueId, userId);
+  res.send(`Ваше місце в черзі: ${position}`);
+};
+
+exports.removeFirst = async (req, res) => {
+  const { ownerId } = req.body;
+  const queues = await repo.getAllQueues();
+  const queue = queues.find(q => q.owner_id === ownerId);
   if (queue) {
-      // Зрівнюємо як строки — на всяк випадок
-      const normalizedUsers = queue.users.map(u => String(u).trim());
-      const normalizedUserId = String(userId).trim();
-      position = normalizedUsers.indexOf(normalizedUserId);
-      if (position !== -1) position += 1;
-      else position = null;
+    await repo.removeFirstUser(queue.id);
   }
+  res.redirect('/');
+};
 
-  const queues = repo.getAllQueues();
-  res.render("index", { queues, userInfo: { userId, queueId, position } });
-}
+exports.removeUser = async (req, res) => {
+  const { ownerId, userId } = req.body;
+  const queues = await repo.getAllQueues();
+  const queue = queues.find(q => q.owner_id === ownerId);
+  if (queue) {
+    await repo.removeUser(queue.id, userId);
+  }
+  res.redirect('/');
+};
 
-
-module.exports = {
-    getHome,
-    postCreateQueue,
-    postJoinQueue,
-    postNext,
-    postRemoveUser,
-    postCloseQueue,
-    postCheckMyPlace
+exports.closeQueue = async (req, res) => {
+  const { ownerId } = req.body;
+  const queues = await repo.getAllQueues();
+  const queue = queues.find(q => q.owner_id === ownerId);
+  if (queue) {
+    await repo.closeQueue(queue.id);
+  }
+  res.redirect('/');
 };
