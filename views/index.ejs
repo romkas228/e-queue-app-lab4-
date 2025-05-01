@@ -1,0 +1,57 @@
+<h1>Електронна черга</h1>
+<ul>
+  <% queues.forEach(queue => { %>
+    <li>
+      <strong><%= queue.name %></strong> (ID: <%= queue.id %>) — <%= queue.users.length %> людей
+      <% if (queue.isOpen) { %> (відкрита) <% } else { %> (закрита) <% } %>
+
+      <!-- Форма: Наступний -->
+      <form action="/next" method="POST">
+        <input type="hidden" name="queueId" value="<%= queue.id %>" />
+        <input type="text" name="ownerId" placeholder="ID хазяїна" />
+        <button>Наступний</button>
+      </form>
+
+      <!-- Форма: Видалити користувача -->
+      <form action="/remove-user" method="POST">
+        <input type="hidden" name="queueId" value="<%= queue.id %>" />
+        <input type="text" name="ownerId" placeholder="ID хазяїна" />
+        <input type="text" name="userId" placeholder="ID користувача" />
+        <button>Видалити користувача</button>
+      </form>
+
+      <!-- Форма: Закрити чергу -->
+      <form action="/close-queue" method="POST">
+        <input type="hidden" name="queueId" value="<%= queue.id %>" />
+        <input type="text" name="ownerId" placeholder="ID хазяїна" />
+        <button>Закрити чергу</button>
+      </form>
+    </li>
+  <% }); %>
+</ul>
+
+<form method="POST" action="/create">
+    <input name="name" placeholder="Назва черги" />
+    <input name="ownerId" placeholder="ID власника" />
+    <button>Створити чергу</button>
+</form>
+
+<form method="POST" action="/join">
+    <input name="queueId" placeholder="ID черги" />
+    <input name="userId" placeholder="ID користувача" />
+    <button>Зайняти місце</button>
+</form>
+
+<form method="POST" action="/check-my-place">
+    <input name="queueId" placeholder="ID черги" />
+    <input name="userId" placeholder="ID користувача" />
+    <button>Перевірити моє місце</button>
+</form>
+
+<% if (userInfo) { %>
+  <% if (userInfo.position) { %>
+    <p>Користувач <strong><%= userInfo.userId %></strong> у черзі <strong><%= userInfo.queueId %></strong>: місце №<%= userInfo.position %></p>
+  <% } else { %>
+    <p>Користувач <strong><%= userInfo.userId %></strong> не знайдений у черзі <strong><%= userInfo.queueId %></strong>.</p>
+  <% } %>
+<% } %>

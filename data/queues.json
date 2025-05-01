@@ -1,0 +1,9 @@
+[
+  {
+    "id": "1",
+    "name": "Моя черга",
+    "ownerId": "admin1",
+    "users": ["u1", "u2"],
+    "isOpen": true
+  }
+]
